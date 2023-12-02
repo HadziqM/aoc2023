@@ -105,8 +105,8 @@ fn main() {
 }
 
         "#;
-
-        std::fs::write(self.path().join("scr").join("main.rs"), code.to_string().as_bytes())
+        let path = self.path().join("src").join("main.rs");
+        std::fs::write(path, code.to_string().as_bytes())
             .expect("cant write code")
     }
 }

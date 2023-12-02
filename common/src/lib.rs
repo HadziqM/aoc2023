@@ -1,5 +1,4 @@
 use std::path::Path;
-use regex::Regex;
 use serde::Deserialize;
 
 pub struct Common{
@@ -41,37 +40,16 @@ impl Common {
     pub fn whitespace(&self) -> Vec<String>{
         self.input().split_whitespace().map(|x|x.to_owned()).collect()
     }
-    /// answer puzzle automatically if no part then use 1
+    /// answer puzzle automatically if no part then use 2 (last part)
     pub fn answer(day:u8,part:u8,answer:String) {
-        tokio::spawn(async move{
-            Self::answer_async(day, part, answer).await
-        });
-    }
-    async fn answer_async(day:u8,part:u8,answer:String) {
-        let client = reqwest::Client::new();
+        let client = reqwest::blocking::Client::new();
         let ses  = Session::default();
         let res = client.post(&format!("https://adventofcode.com/2023/day/{day}/answer"))
             .header(reqwest::header::COOKIE, &format!("session={}",ses.cookie))
             .header(reqwest::header::CONTENT_TYPE, "application/x-www-form-urlencoded")
             .body(format!("level={part}&answer={answer}"))
-            .send().await.expect("cant reach the web, check the cookie");
-        let outcome = Regex::new("r(?i)(?s)<main>(?P<main>.*)</main>").unwrap()
-            .captures(&res.text().await.unwrap())
-            .expect("something wrong with regex")
-            .name("main").unwrap()
-            .as_str().to_string();
-        if outcome.contains("That's the right answer") {
-            println!("You nailed it");
-        } else if outcome.contains("That's not the right answer") {
-            println!("The answer is incorrect");
-        } else if outcome.contains("You gave an answer too recently") {
-            println!("get rate limited, try again after 1 min");
-        } else if outcome
-            .contains("You don't seem to be solving the right level")
-        {
-            println!("the part are incorrect");
-        } else {
-            println!("idk really....");
-        }
+            .send().expect("cant reach the web, check the cookie");
+        let text = res.text().unwrap();
+        println!("{text}");
     }
 }

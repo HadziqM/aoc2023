@@ -3,5 +3,6 @@ members = [
     "mycli",
     "common",
     "day1",
+    "day2",
 ]
 resolver = "2"
