@@ -1,4 +1,5 @@
 use std::{path::{Path, PathBuf}, process::Command};
+use scraper::{Html, Selector};
 use serde::{Serialize, Deserialize};
 use clap::{Parser, ValueEnum};
 
@@ -7,7 +8,9 @@ enum CommandList {
     /// to create new module
     New,
     /// to run existing module
-    Run
+    Run,
+    /// to asnwer part
+    Answer,
 }
 
 
@@ -23,7 +26,15 @@ struct CLI{
 
     ///only download input
     #[arg(short,long)]
-    input:bool
+    input:bool,
+
+    ///part for answer
+    #[arg(short,long)]
+    part:Option<u8>,
+
+    ///the answer
+    #[arg(short,long)]
+    answer:Option<String>
 }
 
 #[derive(Debug,Serialize,Deserialize)]
@@ -101,12 +112,15 @@ fn main() {
     
 
     // to automatically answer the puzzle
-    // Common::answer(1,1,myanswer)
+    // puzzle.answer(1,myanswer)
 }
 
         "#;
         let path = self.path().join("src").join("main.rs");
         std::fs::write(path, code.to_string().as_bytes())
+            .expect("cant write code");
+        let ident = self.path().join("ident.idt");
+        std::fs::write(ident, format!("{}",self.day).as_bytes())
             .expect("cant write code")
     }
 }
@@ -140,6 +154,44 @@ async fn main() {
                     .args(&["-c",&format!("cd day{day}&& cargo run")])
                     .spawn().expect("cant run subprocess");
             cmd.wait_with_output().expect("the subprocess cant stop");
+        }
+        CommandList::Answer => {
+            let day = cli.day;
+            if let Some(part) = cli.part {
+                if let Some(answer) = cli.answer{
+                    let client = reqwest::Client::new();
+                    let ses  = Session::default();
+                    let res = client.post(&format!("https://adventofcode.com/2023/day/{day}/answer"))
+                        .header(reqwest::header::COOKIE, &format!("session={}",ses.cookie))
+                        .header(reqwest::header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+                        .body(format!("level={part}&answer={answer}"))
+                        .send().await.expect("cant reach the web, check the cookie");
+                    let text = res.text().await.unwrap();
+                    let html = Html::parse_document(&text);
+                    let body = html.select(&Selector::parse("body").unwrap())
+                        .next().expect("cant find body inside html");
+                    let main = body.select(&Selector::parse("main").unwrap())
+                        .next().expect("cant find main inside html");
+                    let outcome = main.inner_html();
+                    if outcome.contains("That's the right answer") {
+                        println!("you nailed it");
+                    } else if outcome.contains("That's not the right answer") {
+                        println!("answer are incorrect");
+                    } else if outcome.contains("You gave an answer too recently") {
+                        println!("need to wait a min");
+                    } else if outcome
+                        .contains("You don't seem to be solving the right level")
+                    {
+                        println!("the level/part are incorrect or already answered");
+                    } else {
+                        println!("idk really");
+                    }
+                }else {
+                    println!("specify part with --part 1 and --answer x");
+                }
+            }else {
+                println!("specify part with --part 1 and --answer x");
+            }
         }
     }
 }

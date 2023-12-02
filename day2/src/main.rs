@@ -73,8 +73,5 @@ fn main() {
     }
 
     println!("my answer1 = {answer1} asnwer2 = {answer2}");
-    // Common::answer(2,1,answer1.to_string())
-    Common::answer(2,2,answer2.to_string())
+    puzzle.answer(2,answer2.to_string())
 }
-
-        

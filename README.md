@@ -22,7 +22,7 @@ mycli new 1 --input
 
 in the folder day<daynumber>, write your own solution and if you want to automatically answer them just use this snippet in the code
 ```rust
-Common::answer(day:u8,part:u8,answer:String)
+Common::answer(part:u8,answer:String)
 ```
 to run from workplace dir just use
 ```shell
