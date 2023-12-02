@@ -11,6 +11,10 @@ enum CommandList {
     Run,
     /// to asnwer part
     Answer,
+    /// to download input part
+    Input,
+    /// to download problem/question part
+    Question,
 }
 
 
@@ -23,13 +27,6 @@ struct CLI{
     command:CommandList,
     /// day of challange
     day:u8,
-
-    ///only download input
-    #[arg(short,long)]
-    input:bool,
-    ///only download input
-    #[arg(short,long)]
-    question:bool,
 
     ///part for answer
     #[arg(short,long)]
@@ -154,28 +151,28 @@ async fn main() {
     let cli = CLI::parse();
     match cli.command{
         CommandList::New => {
-            if !cli.input && !cli.question {
-                let mut work = Workplace::default();
-                work.add_member(cli.name());
-                work.save();
-                let cmd = Command::new("sh")
-                        .args(&["-c",&format!("cargo init day{}",cli.day)])
-                        .spawn().expect("cant run subprocess");
-                cmd.wait_with_output().expect("the subprocess cant stop");
-                let cmd = Command::new("sh")
-                        .args(&["-c",&format!("cargo add common --path ./common --package day{}",cli.day)])
-                        .spawn().expect("cant run subprocess");
-                cmd.wait_with_output().expect("the subprocess cant stop");
-                cli.create_main_file();
-                cli.download_input().await;
-                cli.download_question().await;
-            }else if cli.input {
-                cli.download_input().await;
-            }else if cli.question {
-                cli.download_question().await;
-            }
+            let mut work = Workplace::default();
+            work.add_member(cli.name());
+            work.save();
+            let cmd = Command::new("sh")
+                    .args(&["-c",&format!("cargo init day{}",cli.day)])
+                    .spawn().expect("cant run subprocess");
+            cmd.wait_with_output().expect("the subprocess cant stop");
+            let cmd = Command::new("sh")
+                    .args(&["-c",&format!("cargo add common --path ./common --package day{}",cli.day)])
+                    .spawn().expect("cant run subprocess");
+            cmd.wait_with_output().expect("the subprocess cant stop");
+            cli.create_main_file();
+            cli.download_input().await;
+            cli.download_question().await;
             cli.challange();
 
+        }
+        CommandList::Input => {
+            cli.download_input().await;
+        }
+        CommandList::Question => {
+            cli.download_question().await;
         }
         CommandList::Run => {
             let day = cli.day;
