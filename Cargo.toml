@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "mycli",
+    "common",
+    "day1",
+]
+resolver = "2"
