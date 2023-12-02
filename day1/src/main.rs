@@ -8,37 +8,27 @@ pub fn get_num_string(char:Vec<char>,string_num:bool) -> u32 {
     while let Some(x) = iter.next() {
         if let Some(y) = x.to_digit(10){
             out.push(y);
-            checker.clear();
         }else if string_num {
             checker.push(x);
             let word:String = checker.iter().collect();
             if word.ends_with("one"){
                 out.push(1);
-                checker.clear();
             }else if word.ends_with("two"){
                 out.push(2);
-                checker.clear();
             }else if word.ends_with("three"){
                 out.push(3);
-                checker.clear();
             }else if word.ends_with("four"){
                 out.push(4);
-                checker.clear();
             }else if word.ends_with("five"){
                 out.push(5);
-                checker.clear();
             }else if word.ends_with("six"){
                 out.push(6);
-                checker.clear();
             }else if word.ends_with("seven"){
                 out.push(7);
-                checker.clear();
             }else if word.ends_with("eight"){
                 out.push(8);
-                checker.clear();
             }else if word.ends_with("nine"){
                 out.push(9);
-                checker.clear();
             }
         }
     }
@@ -61,7 +51,7 @@ fn main() {
     println!("my answer part1 = {answer1} part2 = {answer2}");
 
     // puzzle.answer(1, answer1.to_string());
-    // puzzle.answer(2, answer2.to_string());
+    puzzle.answer(2, answer2.to_string());
 
 }
 
