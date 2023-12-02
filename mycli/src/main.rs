@@ -27,6 +27,9 @@ struct CLI{
     ///only download input
     #[arg(short,long)]
     input:bool,
+    ///only download input
+    #[arg(short,long)]
+    question:bool,
 
     ///part for answer
     #[arg(short,long)]
@@ -81,8 +84,11 @@ impl Workplace {
 
 
 impl CLI {
-    fn url(&self)-> String {
-        format!("https://adventofcode.com/2023/day/{}/input",self.day)
+    fn url(&self,inp:&str)-> String {
+        if inp == "" {
+            return format!("https://adventofcode.com/2023/day/{}",self.day);
+        }
+        format!("https://adventofcode.com/2023/day/{}/{inp}",self.day)
     }
     fn challange(&self) {
         println!("https://adventofcode.com/2023/day/{}",self.day);
@@ -96,9 +102,27 @@ impl CLI {
     async fn download_input(&self) {
         let client = reqwest::Client::new();
         let ses = Session::default();
-        let bytes = client.get(&self.url()).header("Cookie", &format!("session={}",ses.cookie)).send()
+        let bytes = client.get(&self.url("input")).header("Cookie", &format!("session={}",ses.cookie)).send()
             .await.expect("url not found").bytes().await.expect("its not bytes");
         std::fs::write(&self.path().join("input.txt"), &bytes).expect("cant crate file");
+    }
+    async fn download_question(&self) {
+        let client = reqwest::Client::new();
+        let ses = Session::default();
+        let url = self.url("");
+        let text = client.get(&url).header("Cookie", &format!("session={}",ses.cookie)).send()
+            .await.expect("url not found").text().await.expect("its not bytes");
+        let html = Html::parse_document(&text);
+        let body = html.select(&Selector::parse("body").unwrap())
+            .next().expect("cant find body");
+        let main = body.select(&Selector::parse("main").unwrap())
+            .next().expect("cant find main");
+        for (i,article) in main.select(&Selector::parse("article").unwrap()).enumerate(){
+            let part = i+1;
+            let markdown = html2md::parse_html(&article.inner_html());
+            std::fs::write(&self.path().join(&format!("part{part}.md")), markdown.as_bytes()).expect("cant crate file");
+        }
+
     }
     fn create_main_file(&self) {
         let code = r#"
@@ -130,7 +154,7 @@ async fn main() {
     let cli = CLI::parse();
     match cli.command{
         CommandList::New => {
-            if !cli.input {
+            if !cli.input && !cli.question {
                 let mut work = Workplace::default();
                 work.add_member(cli.name());
                 work.save();
@@ -143,8 +167,13 @@ async fn main() {
                         .spawn().expect("cant run subprocess");
                 cmd.wait_with_output().expect("the subprocess cant stop");
                 cli.create_main_file();
+                cli.download_input().await;
+                cli.download_question().await;
+            }else if cli.input {
+                cli.download_input().await;
+            }else if cli.question {
+                cli.download_question().await;
             }
-            cli.download_input().await;
             cli.challange();
 
         }

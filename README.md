@@ -19,6 +19,10 @@ if you somehow cant get the input because invalid cookie you can try again to do
 ```shell
 mycli new 1 --input
 ```
+if you somehow cant get the question or wanna get the second part of the puzzle after clearing first half you can try again to download the question with
+```shell
+mycli new 1 --question
+```
 
 in the folder day<daynumber>, write your own solution and if you want to automatically answer them just use this snippet in the code
 ```rust
