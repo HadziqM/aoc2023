@@ -61,7 +61,7 @@ fn parsing(line:&str) -> (bool,usize) {
 }
 
 fn main() {
-    let puzzle =  Common::default();
+    let puzzle =  Common::day(2);
     let mut answer1:usize = 0;
     let mut answer2:usize = 0;
     for (index,data) in puzzle.split("\n").enumerate() {

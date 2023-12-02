@@ -6,15 +6,6 @@ pub struct Common{
 }
 
 
-impl Default for Common {
-    fn default() -> Self {
-        let path = Path::new(".").join("./input.txt");
-        let path2 = Path::new(".").join("./ident.idt");
-        let input = std::fs::read_to_string(path).expect("cant find input");
-        let day = std::fs::read_to_string(path2).expect("cant find input").trim().parse::<u8>().unwrap();
-        Self { input,day }
-    }
-}
 
 impl std::ops::Deref for Common {
     type Target = String;
@@ -24,6 +15,11 @@ impl std::ops::Deref for Common {
 }
 
 impl Common {
+    pub fn day(day:u8) -> Self {
+        let path = Path::new(".").join("./input.txt");
+        let input = std::fs::read_to_string(path).expect("cant find input");
+        Self { input,day }
+    }
     pub fn input(&self) -> String {
         self.input.clone()
     }

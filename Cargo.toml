@@ -2,7 +2,7 @@
 members = [
     "mycli",
     "common",
-    "day1",
     "day2",
+    "day1",
 ]
 resolver = "2"

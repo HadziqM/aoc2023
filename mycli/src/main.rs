@@ -9,6 +9,8 @@ enum CommandList {
     New,
     /// to run existing module
     Run,
+    /// to test answer
+    Test,
     /// to asnwer part
     Answer,
     /// to download input part
@@ -127,22 +129,20 @@ use common::Common;
 
 
 fn main() {
-    let puzzle =  Common::default();
+    let puzzle =  Common::day(1);
     // you can make your solution here
     // use puzle.input() to get the input string;
     
 
     // to automatically answer the puzzle
-    // puzzle.answer(1,myanswer)
+    // puzzle.answer(part,myanswer)
 }
 
         "#;
+        let code = code.replace("1", &self.day.to_string());
         let path = self.path().join("src").join("main.rs");
         std::fs::write(path, code.to_string().as_bytes())
             .expect("cant write code");
-        let ident = self.path().join("ident.idt");
-        std::fs::write(ident, format!("{}",self.day).as_bytes())
-            .expect("cant write code")
     }
 }
 
@@ -178,6 +178,13 @@ async fn main() {
             let day = cli.day;
             let cmd = Command::new("sh")
                     .args(&["-c",&format!("cd day{day}&& cargo run")])
+                    .spawn().expect("cant run subprocess");
+            cmd.wait_with_output().expect("the subprocess cant stop");
+        }
+        CommandList::Test => {
+            let day = cli.day;
+            let cmd = Command::new("sh")
+                    .args(&["-c",&format!("cd day{day}&& cargo test -- --show-output")])
                     .spawn().expect("cant run subprocess");
             cmd.wait_with_output().expect("the subprocess cant stop");
         }
